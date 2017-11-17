@@ -2,11 +2,10 @@
 Python3 script for grade sending
 
 # Usage
-```
-python3 gradeSender.py
-```
-**send-grade.py is depreciated after the campus email smtp rule being strengthened.**
-There will be an jupyter notebook version interactive interface.
+Please use the jupyter notebook interface. **Do CHANGE the Configuration**
 
-Currently, it supports formatted .csv file. Next version will give a standard format description.
-The system that I used has limitation on the sending frequency. Next version will make this adjustable.
+Or try to utilize the functions written in gradeSender.py. Detailed description will be updated later.
+
+Currently, it supports formatted .csv file, with `example.csv` given for reference.
+
+The system that I used has limitation on the sending frequency. The standby time may vary with your own system.
