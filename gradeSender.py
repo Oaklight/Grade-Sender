@@ -5,30 +5,14 @@ import time
 import re
 
 DEBUG = True
-user_account = "xyz@whatever.com"
-user_password = "xxxxxxxxxxxx" # autherization code if using 163, qq, etc.
-user_smtp_server = "smtp.whatever.com"
+user_account = ""
+user_password = "" # autherization code if using 163, qq, etc.
+user_smtp_server = ""
 user_smtp_port = 587
-file_to_open = 'xxxxxxx.csv' # currently only support csv file parsing
-sent_list_file = './sent_list.txt'
-server = smtplib.SMTP()
-
-# Email template
-content = """
-        <html>
-          <head></head>
-          <body>
-            <p>Hi {},<br><br>
-               You midterm score report:<br>
-               Student ID: <strong>{}</strong>, Score: <strong>{}</strong>,<br>
-               Contact with your assigned TA if any question.<br>
-               Grade appeal will lead to answersheet regrading, which may lower your score.<br><br>
-               Best regards,<br>
-               Instructors
-            </p>
-          </body>
-        </html>
-        """
+file_to_open = "" # currently only support csv file parsing
+sent_list_file = ""
+waiting_list, sent_list = {}, {}
+content = ""
 
 def send(mail, name, id, score):
     msg = MIMEText(content.format(name, id, score), 'html')
@@ -59,6 +43,7 @@ def connect(user_smtp_server, user_smtp_port, user_account, user_password):
     return server
 
 def read_waiting_list(file_to_open, waiting_list):
+    sent_list= {}
     with open(file_to_open, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
         for i, row in enumerate(reader):
@@ -85,9 +70,13 @@ def read_sent_list(file_to_open, sent_list):
         for i, row in enumerate(reader):
             record = [x for x in re.split('[,\s]+', row) if x != '']
             sent_list[i] = eval(record[4].title())
-            id, name, email, score = waiting_list[i]
-            print(name, email, score, sent_list[i])
         return sent_list
+    
+def print_list(waiting_list, sent_list):
+    for i in range(len(waiting_list)):
+        id, name, email, score = waiting_list[i]
+        print(name, email, score, sent_list[i])
+        # print(person)
     
 def send_score(waiting_list, sent_list):
     print('Total waiting: {}'.format(len(waiting_list)))
@@ -97,14 +86,9 @@ def send_score(waiting_list, sent_list):
             continue
         if i % 25 == 0:
             print('Inline waiting: {}'.format(len(waiting_list)-i))
-
         if i == 0:
             server = connect(user_smtp_server, user_smtp_port, user_account, user_password)
-
         d = waiting_list[i]
-
-    #     print('checkpoint1', flush=True)
-    #     print(waiting_list[i], sent_list[i])
         while not sent_list[i]:
             try:
                 print('Sending: {} ... '.format(d[2]), end = '', flush = True)
@@ -129,22 +113,6 @@ def send_score(waiting_list, sent_list):
             time.sleep(65)
             print('Done.', flush = True)
             server = connect(user_smtp_server, user_smtp_port, user_account, user_password)
-
-
     print('All sent.')        
     server.quit()
-
-# ======================================================================
-server = connect(user_smtp_server, user_smtp_port, user_account, user_password)
-waiting_list, sent_list = {}, {}
-waiting_list, sent_list = read_waiting_list(file_to_open, waiting_list)
-try:
-    sent_list = read_sent_list(sent_list_file, sent_list)
-except:
-    write_sent_list(waiting_list, sent_list)
-try:
-    sent_list = read_sent_list(sent_list_file, sent_list)
-    send_score(waiting_list, sent_list)
-except:
-    write_sent_list(waiting_list, sent_list)
     
